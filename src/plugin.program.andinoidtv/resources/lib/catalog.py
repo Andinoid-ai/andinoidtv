@@ -6,8 +6,11 @@
 - "external": addons de terceros que la build NO instala ni distribuye. El ícono
   funciona cuando el usuario ya los instaló por su cuenta; si no, avisa.
 """
+import os
+
 import xbmc
 import xbmcgui
+import xbmcvfs
 
 from resources.lib import kodiutils as ku
 
@@ -38,6 +41,12 @@ ADDONS = {
         'desc': 'TV en vivo.'},
 }
 
+# Filas de accesos que la skin muestra como carátulas
+GROUPS = {
+    'livetv': ['plutotv', 'magellan', 'youtube'],
+    'addons': ['jacktook', 'palantir', 'alfa', 'balandro', 'magellan', 'plutotv', 'youtube'],
+}
+
 
 def resolve_id(key):
     info = ADDONS.get(key)
@@ -48,7 +57,11 @@ def resolve_id(key):
     return ku.find_addon_by_name(info.get('match', key))
 
 
-def open_addon(key):
+def _open_window(addon_id):
+    xbmc.executebuiltin(f'ActivateWindow(Videos,plugin://{addon_id}/,return)')
+
+
+def open_addon(key, back=False):
     info = ADDONS.get(key)
     if not info:
         ku.notify('Acceso no reconocido')
@@ -58,24 +71,51 @@ def open_addon(key):
     if addon_id and ku.has_addon(addon_id):
         if not ku.addon_enabled(addon_id):
             ku.enable_addon(addon_id)
-        xbmc.executebuiltin(f'ActivateWindow(Videos,plugin://{addon_id}/,return)')
+        _open_window(addon_id)
         return
 
-    dialog = xbmcgui.Dialog()
     if info['kind'] == 'official':
-        if dialog.yesno(info['name'], f"{info['name']} no está instalado.\n{info['desc']}\n\n¿Quieres instalarlo ahora?",
-                        nolabel='No', yeslabel='Instalar'):
-            if ku.install_addon(addon_id):
-                ku.notify(f"{info['name']} instalado")
-                xbmc.executebuiltin(f'ActivateWindow(Videos,plugin://{addon_id}/,return)')
-            else:
-                dialog.ok(info['name'], 'No se pudo instalar. Revisa tu conexión e inténtalo de nuevo.')
-        return
+        # Kodi muestra su propio "¿Deseas descargar este complemento?"
+        if ku.install_addon(addon_id, timeout=90):
+            _open_window(addon_id)
+            return
+    else:
+        xbmcgui.Dialog().ok(
+            info['name'],
+            f"{info['name']} no está instalado.\n"
+            'Andinoid TV no instala addons de terceros. Instálalo desde su fuente '
+            '(ver tu guía) y este ícono lo abrirá automáticamente.')
+    if back:
+        # Abierto desde una fila: regresar al inicio en lugar de quedar en "Archivos"
+        xbmc.executebuiltin('Action(Back)')
 
-    dialog.ok(info['name'],
-              f"{info['name']} no está instalado.\n"
-              'Andinoid TV no instala addons de terceros. Instálalo desde su fuente '
-              '(ver tu guía) y este ícono lo abrirá automáticamente.')
+
+def shortcut_entry(key):
+    """Datos para mostrar un acceso como carátula en una fila."""
+    info = ADDONS[key]
+    addon_id = resolve_id(key)
+    installed = bool(addon_id and ku.has_addon(addon_id))
+    icon = ku.ADDON.getAddonInfo('icon')
+    fanart = ku.ADDON.getAddonInfo('fanart')
+    if installed:
+        base = xbmcvfs.translatePath(f'special://home/addons/{addon_id}')
+        for name in ('icon.png', os.path.join('resources', 'icon.png'), 'icon.jpg'):
+            if os.path.exists(os.path.join(base, name)):
+                icon = os.path.join(base, name)
+                break
+    if installed:
+        plot = info['desc']
+    elif info['kind'] == 'official':
+        plot = info['desc'] + ' Toca para instalarlo.'
+    else:
+        plot = info['desc'] + ' No instalado.'
+    return {
+        'label': info['name'],
+        'icon': icon,
+        'fanart': fanart,
+        'plot': plot,
+        'path': f'plugin://{addon_id}/' if installed else '',
+    }
 
 
 def status_lines():

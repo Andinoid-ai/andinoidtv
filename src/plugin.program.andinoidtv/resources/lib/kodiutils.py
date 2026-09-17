@@ -9,7 +9,7 @@ import xbmcaddon
 import xbmcgui
 import xbmcvfs
 
-ADDON = xbmcaddon.Addon()
+ADDON = xbmcaddon.Addon('plugin.program.andinoidtv')
 ADDON_ID = ADDON.getAddonInfo('id')
 ADDON_NAME = 'Andinoid TV'
 ADDON_PATH = xbmcvfs.translatePath(ADDON.getAddonInfo('path'))
@@ -142,3 +142,9 @@ def get_addon_setting(addon_id, setting_id):
 
 def wait(seconds):
     xbmc.Monitor().waitForAbort(seconds)
+
+
+def run_detached(action, **params):
+    """Ejecuta una acción como script independiente (sobrevive a cambios de skin o idioma)."""
+    extra = ''.join(f',{k}={v}' for k, v in params.items())
+    xbmc.executebuiltin(f'RunScript({ADDON_ID},{action}{extra})')

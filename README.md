@@ -16,12 +16,19 @@ Build ligera para **Kodi 21 "Omega"** pensada para equipos de **2 GB de RAM** (o
 
 ## Instalación en el onn 4K
 
-1. **Ajustes > Sistema > Complementos:** activa **Orígenes desconocidos**.
+1. **Ajustes > Sistema > Complementos:** activa **Orígenes desconocidos** y cambia **Actualizar complementos oficiales desde** a **Cualquier repositorio** (sin esto, Arctic Fuse 3 no encuentra TMDb Helper ni Skin Variables).
 2. **Ajustes > Explorador de archivos > Añadir fuente:** escribe `https://andinoid-ai.github.io/andinoidtv/` y ponle el nombre **andinoid**.
 3. **Complementos > Instalar desde archivo .zip > andinoid:** elige `repository.andinoidtv-1.0.0.zip`.
 4. **Instalar desde repositorio > Andinoid TV - Repositorio > Complementos de programa:** elige **Andinoid TV - Configurador** e instálalo. Acepta las dependencias.
 5. Abre el configurador y elige **Aplicar build Andinoid TV**.
 6. Para reproducir desde las carátulas: instala Jacktook, vincula Real-Debrid y agrega tu enlace de Torrentio.
+
+## Qué verás
+
+- **Inicio:** Tendencias de hoy, Películas y Series populares, En cines, Cine en español, Anime del momento y la fila **Mis addons**.
+- **Películas, Series y Anime:** cada sección con su portada y sus propias filas.
+- **TV en vivo:** fila **Canales y TV** (Pluto TV, Magellan, YouTube). Pluto TV y YouTube se instalan al tocarlos.
+- Toda la interfaz en español de México; el servicio de la build repone la traducción si la skin se actualiza.
 
 ## Menú del configurador
 

@@ -29,6 +29,10 @@ def repair_sources():
     if ku.has_addon(TMDBH):
         build.configure_tmdbhelper()
         lines.append('TheMovieDb Helper: reproductor Jacktook y español restablecidos')
+    from resources.lib import spanish
+    if spanish.ensure_strings():
+        lines.append('Traducción al español restablecida (la interfaz se recargará)')
+        xbmc.executebuiltin('ReloadSkin()')
     dialog.ok('Reparar fuentes', '\n'.join(lines))
 
 

@@ -10,6 +10,8 @@ Menús usados: homewidgets / homesubmenu (Inicio) y 1101..1104 (hubs).
 import json
 import os
 
+import xbmc
+import xbmcgui
 import xbmcvfs
 
 from resources.lib import kodiutils as ku
@@ -50,7 +52,7 @@ def shortcut(label, icon, path, target=''):
 
 
 def open_action(key):
-    return f'RunPlugin({ME}?action=open&key={key})'
+    return f'RunScript(plugin.program.andinoidtv,open,key={key})'
 
 
 ANIME_TV = dict(with_genres='16', with_id='True', with_original_language='ja', sort_by='popularity.desc')
@@ -66,6 +68,7 @@ MENUS = {
         widget('En cines', tmdb('now_playing', 'movie', region='MX')),
         widget('Cine en español', tmdb('discover', 'movie', **LATINO)),
         widget('Anime del momento', tmdb('discover', 'tv', **ANIME_TV)),
+        widget('Mis addons', ME + '?action=list&group=addons', style='Square', limit='10'),
     ],
     'homesubmenu': [
         shortcut('Buscar', ICONS + 'search.png', f'ActivateWindow(Videos,{TMDB}?info=dir_search,return)', 'videos'),
@@ -108,13 +111,20 @@ MENUS = {
     ],
     '1103submenu': [],
     # ---------- TV en vivo ----------
-    '1104widgets': [],
+    '1104widgets': [
+        widget('Canales y TV', ME + '?action=list&group=livetv', style='Square', limit='10'),
+    ],
     '1104submenu': [
         shortcut('Pluto TV', ICONS + 'livetv.png', open_action('plutotv')),
         shortcut('Magellan', ICONS + 'livetv.png', open_action('magellan')),
         shortcut('YouTube', ICONS + 'video.png', open_action('youtube')),
     ],
 }
+
+
+HUBS['1101']['spotlight'] = tmdb('trending_week', 'movie')
+HUBS['1102']['spotlight'] = tmdb('trending_week', 'tv')
+HUBS['1103']['spotlight'] = tmdb('discover', 'tv', **ANIME_TV)
 
 
 def write_nodes():
@@ -124,7 +134,19 @@ def write_nodes():
     for menu, items in MENUS.items():
         path = os.path.join(folder, f'skinvariables-shortcut-{menu}.json')
         ku.write_text(path, json.dumps(items, indent=4, ensure_ascii=False))
+        # Skin Variables guarda una copia en memoria: se borra para que lea el archivo nuevo
+        xbmcgui.Window(10000).clearProperty(
+            f'SkinVariables.ShortcutsNode.{SKIN_ID}-skinvariables-shortcut-{menu}.json')
     ku.log(f'Nodos escritos en {folder}')
+
+
+def rebuild_skin_includes():
+    """Obliga a Arctic Fuse 3 a regenerar las filas con los nodos nuevos."""
+    if xbmc.getSkinDir() != SKIN_ID:
+        return False
+    xbmc.executebuiltin('RunScript(script.skinvariables,action=buildtemplate,force,background=false)', True)
+    ku.wait(2)
+    return True
 
 
 def skin_strings():
@@ -134,6 +156,9 @@ def skin_strings():
         cmds.append(f'Skin.SetString(HomeSwitcher.{window_id}.Toggle,true)')
         cmds.append(f'Skin.SetString(HomeSwitcher.{window_id}.Name,{hub["name"]})')
         cmds.append(f'Skin.SetString(HomeSwitcher.{window_id}.Icon,{hub["icon"]})')
+        if hub.get('spotlight'):
+            cmds.append(f'Skin.SetString(HomeSwitcher.{window_id}.Spotlight.Path,{hub["spotlight"]})')
+            cmds.append(f'Skin.SetString(HomeSwitcher.{window_id}.Spotlight.Target,videos)')
     # Portada del inicio con tendencias en lugar de la biblioteca local (vacía en streaming).
     cmds += [
         f'Skin.SetString(HomeSwitcher.Home.Spotlight.Path,{tmdb("trending_week", "movie")})',

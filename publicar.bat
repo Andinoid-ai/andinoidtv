@@ -12,7 +12,7 @@ REM Quitar del repositorio los zips de trabajo (no se publican)
 git rm -r --cached --quiet --ignore-unmatch andinoidtv_github.zip andinoidtv_proyecto.zip pruebas
 
 git add -A
-git commit -m "Andinoid TV 1.0.0"
+git commit -m "Actualizar Andinoid TV"
 
 REM Unir con lo que ya existe en GitHub, conservando la version local
 git fetch origin

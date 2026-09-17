@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Aplica la build Andinoid TV sobre una instalación de Kodi (limpia o existente)."""
 import os
-import shutil
 
 import xbmc
 import xbmcgui
@@ -9,6 +8,7 @@ import xbmcvfs
 
 from resources.lib import kodiutils as ku
 from resources.lib import nodes
+from resources.lib import spanish
 
 TMDBH = 'plugin.video.themoviedb.helper'
 JACKTOOK = 'plugin.video.jacktook'
@@ -56,6 +56,8 @@ def configure_tmdbhelper():
     # Jacktook como reproductor predeterminado (se usa solo si Jacktook está instalado)
     ku.set_addon_setting(TMDBH, 'default_player_movies', f'{JACKTOOK_PLAYER} play_movie')
     ku.set_addon_setting(TMDBH, 'default_player_episodes', f'{JACKTOOK_PLAYER} play_episode')
+    # Solo Jacktook como reproductor (oculta UPnP y otros reproductores incluidos)
+    ku.set_addon_setting(TMDBH, 'bundled_players', False)
 
 
 def configure_jacktook():
@@ -102,7 +104,8 @@ def set_language():
     if not ku.install_addon(LANGUAGE_ADDON, timeout=120):
         return False
     ok = ku.set_kodi_setting('locale.language', LANGUAGE_ADDON)
-    ku.set_kodi_setting('locale.country', 'México')
+    ku.wait(3)  # Kodi recarga la interfaz al cambiar de idioma
+    ku.set_kodi_setting('locale.country', 'Mexico')
     return ok
 
 
@@ -124,7 +127,8 @@ def run(silent=False):
     if missing:
         pd.close()
         dialog.ok('Andinoid TV', 'No se pudieron instalar: ' + ', '.join(missing) +
-                  '\nRevisa tu conexión e inténtalo de nuevo.')
+                  '\nRevisa tu conexión y que "Actualizar complementos oficiales desde" '
+                  'esté en "Cualquier repositorio".')
         return
 
     _progress(pd, 2, 'Configurando TheMovieDb Helper en español...')
@@ -141,30 +145,28 @@ def run(silent=False):
 
     _progress(pd, 5, 'Creando menús y filas de carátulas...')
     nodes.write_nodes()
+    ku.ADDON.setSettingBool('build_applied', True)
 
-    _progress(pd, 6, 'Activando la skin Arctic Fuse 3...')
+    _progress(pd, 6, 'Cambiando el idioma a Español (México)...')
+    pd.close()
+    if not set_language():
+        report.append('Idioma: no se pudo instalar Español (México)')
+    spanish.ensure_strings()
+
+    pd = xbmcgui.DialogProgress()
+    pd.create('Andinoid TV', '')
+    _progress(pd, 7, 'Activando la skin Arctic Fuse 3...')
     pd.close()
     if not switch_skin():
         dialog.ok('Andinoid TV', 'No se pudo activar Arctic Fuse 3. Actívala en Ajustes > Interfaz > Skin '
                                  'y vuelve a ejecutar "Aplicar build".')
         return
-
+    ku.wait(3)
     apply_skin_strings()
-
-    pd = xbmcgui.DialogProgress()
-    pd.create('Andinoid TV', '')
-    _progress(pd, 7, 'Cambiando el idioma a Español (México)...')
-    lang_ok = set_language()
-    if not lang_ok:
-        report.append('Idioma: no se pudo instalar Español (México)')
-
-    _progress(pd, 8, 'Listo')
-    ku.wait(1)
-    pd.close()
-
-    ku.ADDON.setSettingBool('build_applied', True)
+    nodes.rebuild_skin_includes()
+    xbmc.executebuiltin('ReloadSkin()')
+    ku.wait(4)
 
     dialog.ok('Andinoid TV aplicada',
               'La build quedó instalada.\n' + '\n'.join(report) +
-              '\n\nKodi recargará la interfaz. Si alguna fila sale vacía, espera unos segundos.')
-    xbmc.executebuiltin('ReloadSkin()')
+              '\n\nSi alguna fila sale vacía, espera unos segundos.')
