@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
-tests/__pycache__/
+tests/
+/andinoidtv_github.zip
+/andinoidtv_proyecto.zip
+/pruebas/
