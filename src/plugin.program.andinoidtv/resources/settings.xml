@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings version="1">
+    <section id="plugin.program.andinoidtv">
+        <category id="general" label="General" help="">
+            <group id="1">
+                <setting id="build_applied" type="boolean" label="Build aplicada" help="">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+        </category>
+    </section>
+</settings>

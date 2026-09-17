@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.program.andinoidtv" name="Andinoid TV - Configurador" version="1.0.0" provider-name="Andinoid">
+    <requires>
+        <import addon="xbmc.python" version="3.0.1"/>
+        <import addon="skin.arctic.fuse.3" version="3.3.0"/>
+        <import addon="plugin.video.themoviedb.helper" version="6.14.3"/>
+        <import addon="script.skinvariables" version="2.2.4"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>executable</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="es_ES">Build ligera en español para equipos de 2 GB</summary>
+        <summary lang="en_GB">Lightweight Spanish build for 2 GB devices</summary>
+        <description lang="es_ES">Aplica la interfaz Andinoid TV (Arctic Fuse 3 + TheMovieDb Helper en español de México), optimiza Kodi para 2 GB de RAM y ofrece herramientas de reparación y diagnóstico.</description>
+        <description lang="en_GB">Applies the Andinoid TV interface and 2 GB RAM tuning.</description>
+        <platform>all</platform>
+        <license>GPL-3.0-or-later</license>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
+</addon>
