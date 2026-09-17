@@ -14,6 +14,7 @@ PARAMS = dict(parse_qsl(sys.argv[2][1:])) if len(sys.argv) > 2 else {}
 
 MENU = [
     ('apply', 'Aplicar build Andinoid TV', 'Instala la interfaz, los menús con carátulas y los ajustes para 2 GB.'),
+    ('players', 'Fuentes de reproducción', 'Elige si al tocar una carátula se pregunta el addon o se usa siempre Jacktook.'),
     ('repair', 'Reparar fuentes', 'Reactiva Stremio/Torrentio en Jacktook, el reproductor y la traducción.'),
     ('diagnose', 'Diagnóstico', 'Muestra qué addons están instalados y el estado de los ajustes.'),
     ('clean', 'Limpiar caché', 'Libera espacio y memoria.'),
@@ -22,7 +23,7 @@ MENU = [
 ]
 
 # Acciones que cambian skin/idioma o muestran diálogos: se ejecutan fuera del listado
-DETACHED = {'apply', 'repair', 'diagnose', 'clean', 'estuary', 'help'}
+DETACHED = {'apply', 'players', 'repair', 'diagnose', 'clean', 'estuary', 'help'}
 
 
 def url(**kwargs):

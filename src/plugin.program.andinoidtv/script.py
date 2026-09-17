@@ -18,6 +18,9 @@ def main():
     if action == 'apply':
         from resources.lib import apply
         apply.run()
+    elif action == 'players':
+        from resources.lib import tools
+        tools.choose_players()
     elif action == 'repair':
         from resources.lib import tools
         tools.repair_sources()

@@ -16,6 +16,15 @@ LANGUAGE_ADDON = 'resource.language.es_mx'
 TMDBH_LANGUAGE_ES_MX = 21  # Índice de "Spanish (Mexico)" en los ajustes de TheMovieDb Helper
 JACKTOOK_PLAYER = 'jacktook.select.json'
 
+# Reproductores que la build copia a TheMovieDb Helper: (archivo, addon que lo usa)
+PLAYERS = [
+    (JACKTOOK_PLAYER, JACKTOOK),
+    ('direct.elementum.json', 'plugin.video.elementum'),
+    ('buscar.alfa.json', 'plugin.video.alfa'),
+    ('buscar.balandro.json', 'plugin.video.balandro'),
+    ('buscar.palantir3.json', 'plugin.video.palantir3'),
+]
+
 # Ajustes de Kodi 21 para equipos de 2 GB (ids de system/settings/settings.xml)
 KODI_SETTINGS = [
     ('filecache.buffermode', 4),          # Solo streams de Internet (valor por defecto de Kodi 21)
@@ -45,19 +54,49 @@ def install_dependencies():
     return missing
 
 
-def configure_tmdbhelper():
-    ku.set_addon_setting(TMDBH, 'language', TMDBH_LANGUAGE_ES_MX)
+def player_mode():
+    """0 = preguntar qué addon usar, 1 = usar siempre Jacktook."""
+    try:
+        return int(ku.ADDON.getSetting('player_mode') or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def copy_players():
+    """Copia los reproductores de Andinoid TV a TheMovieDb Helper.
+
+    Solo se copia el de un addon que esté instalado, para que la lista de
+    fuentes no se llene de opciones que no funcionan.
+    """
     players_dir = os.path.join(ku.addon_data_dir(TMDBH), 'players')
     if not xbmcvfs.exists(players_dir + os.sep):
         xbmcvfs.mkdirs(players_dir)
-    src = os.path.join(ku.DATA_PATH, 'players', JACKTOOK_PLAYER)
-    dst = os.path.join(players_dir, JACKTOOK_PLAYER)
-    xbmcvfs.copy(src, dst)
-    # Jacktook como reproductor predeterminado (se usa solo si Jacktook está instalado)
-    ku.set_addon_setting(TMDBH, 'default_player_movies', f'{JACKTOOK_PLAYER} play_movie')
-    ku.set_addon_setting(TMDBH, 'default_player_episodes', f'{JACKTOOK_PLAYER} play_episode')
-    # Solo Jacktook como reproductor (oculta UPnP y otros reproductores incluidos)
+    copied = []
+    for filename, addon_id in PLAYERS:
+        src = os.path.join(ku.DATA_PATH, 'players', filename)
+        dst = os.path.join(players_dir, filename)
+        if ku.has_addon(addon_id):
+            if xbmcvfs.copy(src, dst):
+                copied.append(filename)
+        elif xbmcvfs.exists(dst):
+            xbmcvfs.delete(dst)
+    return copied
+
+
+def configure_tmdbhelper():
+    ku.set_addon_setting(TMDBH, 'language', TMDBH_LANGUAGE_ES_MX)
+    copied = copy_players()
+    if player_mode() == 1 and ku.has_addon(JACKTOOK):
+        # Jacktook directo: la carátula reproduce sin preguntar
+        ku.set_addon_setting(TMDBH, 'default_player_movies', f'{JACKTOOK_PLAYER} play_movie')
+        ku.set_addon_setting(TMDBH, 'default_player_episodes', f'{JACKTOOK_PLAYER} play_episode')
+    else:
+        # Sin reproductor fijo: TheMovieDb Helper muestra la lista de fuentes
+        ku.set_addon_setting(TMDBH, 'default_player_movies', '')
+        ku.set_addon_setting(TMDBH, 'default_player_episodes', '')
+    # No se muestran los reproductores incluidos de serie (UPnP, etc.)
     ku.set_addon_setting(TMDBH, 'bundled_players', False)
+    return copied
 
 
 def configure_jacktook():
@@ -132,7 +171,10 @@ def run(silent=False):
         return
 
     _progress(pd, 2, 'Configurando TheMovieDb Helper en español...')
-    configure_tmdbhelper()
+    copied = configure_tmdbhelper()
+    if copied:
+        report.append('Fuentes en las carátulas: ' + ', '.join(
+            name.split('.')[1].capitalize() for name in copied))
 
     _progress(pd, 3, 'Revisando Jacktook...')
     report.append('Jacktook: fuentes de Stremio activadas' if configure_jacktook()

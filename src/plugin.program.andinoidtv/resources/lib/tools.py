@@ -27,13 +27,43 @@ def repair_sources():
     else:
         lines.append('Jacktook no está instalado: sin él no hay reproducción desde las carátulas.')
     if ku.has_addon(TMDBH):
-        build.configure_tmdbhelper()
-        lines.append('TheMovieDb Helper: reproductor Jacktook y español restablecidos')
+        copied = build.configure_tmdbhelper()
+        lines.append('TheMovieDb Helper: español y fuentes restablecidos')
+        if copied:
+            lines.append('Fuentes: ' + ', '.join(name.split('.')[1].capitalize()
+                                                 for name in copied))
     from resources.lib import spanish
     if spanish.ensure_strings():
         lines.append('Traducción al español restablecida (la interfaz se recargará)')
         xbmc.executebuiltin('ReloadSkin()')
     dialog.ok('Reparar fuentes', '\n'.join(lines))
+
+
+def choose_players():
+    """Elige si las carátulas preguntan por la fuente o van directo a Jacktook."""
+    dialog = xbmcgui.Dialog()
+    current = build.player_mode()
+    options = ['Preguntar qué addon usar (Jacktook, Elementum, Alfa, Balandro, Palantir...)',
+               'Usar siempre Jacktook (sin preguntar)']
+    options[current] = '[COLOR limegreen]•[/COLOR] ' + options[current]
+    choice = dialog.select('Al elegir una carátula', options)
+    if choice < 0:
+        return
+    ku.ADDON.setSettingInt('player_mode', choice)
+    if not ku.has_addon(TMDBH):
+        dialog.ok('Fuentes', 'TheMovieDb Helper no está instalado.')
+        return
+    copied = build.configure_tmdbhelper()
+    lines = ['Modo: ' + ('Preguntar' if choice == 0 else 'Siempre Jacktook')]
+    if copied:
+        lines.append('Fuentes disponibles: ' + ', '.join(
+            name.split('.')[1].capitalize() for name in copied))
+    else:
+        lines.append('No se detectó ningún addon compatible instalado.')
+    lines.append('')
+    lines.append('Palantir, Alfa y Balandro no permiten reproducir directo por título: '
+                 'su opción abre la búsqueda del addon con el nombre ya escrito.')
+    dialog.ok('Fuentes de reproducción', '\n'.join(lines))
 
 
 def diagnose():
@@ -112,7 +142,8 @@ def help_text():
         '1. Ejecuta "Aplicar build".\n'
         '2. Instala Jacktook desde su fuente y vincula Real-Debrid en sus ajustes (Servicios).\n'
         '3. En Jacktook > Ajustes > Fuentes, agrega tu enlace de Torrentio.\n'
-        '4. Elige cualquier carátula del inicio: se abrirá Jacktook con las fuentes.\n\n'
+        '4. Elige cualquier carátula del inicio y elige la fuente (Jacktook, Elementum, '
+        'Alfa, Balandro, Palantir...). Con "Fuentes de reproducción" puedes dejar Jacktook fijo.\n\n'
         '[B]Si algo falla[/B]\n'
         '- "No results found": usa "Reparar fuentes".\n'
         '- Error de reproducción: elige una fuente 1080p más liviana.\n'

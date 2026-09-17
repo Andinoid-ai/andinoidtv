@@ -1,0 +1,20 @@
+{
+    "name": "[COLOR gold]Alfa[/COLOR] (buscar)",
+    "plugin": "plugin.video.alfa",
+    "priority": 410,
+    "is_resolvable": "false",
+    "assert": {
+        "search_movie": ["title"],
+        "search_episode": ["showname"]
+    },
+    "search_movie": [
+        "plugin://plugin.video.alfa/",
+        {"label": "(?i).*(buscar|search).*"},
+        {"keyboard": "{title}"}
+    ],
+    "search_episode": [
+        "plugin://plugin.video.alfa/",
+        {"label": "(?i).*(buscar|search).*"},
+        {"keyboard": "{showname}"}
+    ]
+}

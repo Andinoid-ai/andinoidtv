@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.andinoidtv" name="Andinoid TV - Configurador" version="1.0.1" provider-name="Andinoid">
+<addon id="plugin.program.andinoidtv" name="Andinoid TV - Configurador" version="1.0.2" provider-name="Andinoid">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
         <import addon="skin.arctic.fuse.3" version="3.3.0"/>
@@ -16,7 +16,7 @@
         <summary lang="en_GB">Lightweight Spanish build for 2 GB devices</summary>
         <description lang="es_ES">Aplica la interfaz Andinoid TV (Arctic Fuse 3 + TheMovieDb Helper en español de México), optimiza Kodi para 2 GB de RAM y ofrece herramientas de reparación y diagnóstico.</description>
         <description lang="en_GB">Applies the Andinoid TV interface and 2 GB RAM tuning.</description>
-        <news>1.0.1: menús completamente en español, instalación en un solo paso, fila de canales en TV en vivo y fila "Mis addons".</news>
+        <news>1.0.2: Magellan y otros addons se detectan por su id real; al tocar una carátula puedes elegir la fuente (Jacktook, Elementum, Alfa, Balandro, Palantir); accesos a Ajustes de Kodi e Instalar .zip en el menú de Inicio.</news>
         <platform>all</platform>
         <license>GPL-3.0-or-later</license>
         <assets>

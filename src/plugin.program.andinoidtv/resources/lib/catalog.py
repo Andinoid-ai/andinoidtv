@@ -37,24 +37,47 @@ ADDONS = {
         'id': 'plugin.video.balandro', 'name': 'Balandro', 'kind': 'external',
         'desc': 'Respaldo sin debrid.'},
     'magellan': {
+        # El id real del addon es plugin.video.Magellan_Matrix y su nombre lleva
+        # etiquetas de color, por eso se busca por id y por nombre.
         'id': None, 'match': 'magellan', 'name': 'Magellan', 'kind': 'external',
+        'candidates': ['plugin.video.Magellan_Matrix', 'plugin.video.magellan',
+                       'plugin.video.magellan_matrix'],
         'desc': 'TV en vivo.'},
+    'elementum': {
+        'id': 'plugin.video.elementum', 'name': 'Elementum', 'kind': 'external',
+        'desc': 'Torrents con Real-Debrid o directo.'},
 }
 
 # Filas de accesos que la skin muestra como carátulas
 GROUPS = {
     'livetv': ['plutotv', 'magellan', 'youtube'],
-    'addons': ['jacktook', 'palantir', 'alfa', 'balandro', 'magellan', 'plutotv', 'youtube'],
+    'addons': ['jacktook', 'palantir', 'alfa', 'balandro', 'elementum', 'magellan',
+               'plutotv', 'youtube'],
 }
 
+_RESOLVED = {}
 
-def resolve_id(key):
+
+def resolve_id(key, refresh=False):
+    """Devuelve el id instalado de un acceso, aunque el addon use otro id/nombre."""
     info = ADDONS.get(key)
     if not info:
         return None
     if info.get('id'):
         return info['id']
-    return ku.find_addon_by_name(info.get('match', key))
+    if not refresh and key in _RESOLVED:
+        return _RESOLVED[key]
+    found = None
+    for candidate in info.get('candidates', []):        # 1) ids conocidos
+        if ku.has_addon(candidate):
+            found = candidate
+            break
+    if not found:                                        # 2) búsqueda por id o nombre
+        found = ku.find_addon(info.get('match', key))
+    _RESOLVED[key] = found
+    if found:
+        ku.log(f'Acceso "{key}" resuelto como {found}')
+    return found
 
 
 def _open_window(addon_id):
@@ -66,7 +89,7 @@ def open_addon(key, back=False):
     if not info:
         ku.notify('Acceso no reconocido')
         return
-    addon_id = resolve_id(key)
+    addon_id = resolve_id(key, refresh=True)
 
     if addon_id and ku.has_addon(addon_id):
         if not ku.addon_enabled(addon_id):
@@ -93,16 +116,20 @@ def open_addon(key, back=False):
 def shortcut_entry(key):
     """Datos para mostrar un acceso como carátula en una fila."""
     info = ADDONS[key]
-    addon_id = resolve_id(key)
+    addon_id = resolve_id(key, refresh=True)
     installed = bool(addon_id and ku.has_addon(addon_id))
     icon = ku.ADDON.getAddonInfo('icon')
     fanart = ku.ADDON.getAddonInfo('fanart')
     if installed:
-        base = xbmcvfs.translatePath(f'special://home/addons/{addon_id}')
-        for name in ('icon.png', os.path.join('resources', 'icon.png'), 'icon.jpg'):
-            if os.path.exists(os.path.join(base, name)):
-                icon = os.path.join(base, name)
-                break
+        own = ku.addon_icon(addon_id)
+        if own:
+            icon = own
+        else:
+            base = xbmcvfs.translatePath(f'special://home/addons/{addon_id}')
+            for name in ('icon.png', os.path.join('resources', 'icon.png'), 'icon.jpg'):
+                if os.path.exists(os.path.join(base, name)):
+                    icon = os.path.join(base, name)
+                    break
     if installed:
         plot = info['desc']
     elif info['kind'] == 'official':
@@ -121,8 +148,9 @@ def shortcut_entry(key):
 def status_lines():
     lines = []
     for key, info in ADDONS.items():
-        addon_id = resolve_id(key)
+        addon_id = resolve_id(key, refresh=True)
         installed = bool(addon_id and ku.has_addon(addon_id))
-        mark = '[COLOR limegreen]Instalado[/COLOR]' if installed else '[COLOR orange]No instalado[/COLOR]'
+        mark = ('[COLOR limegreen]Instalado[/COLOR] (%s)' % addon_id if installed
+                else '[COLOR orange]No instalado[/COLOR]')
         lines.append(f"{info['name']}: {mark}")
     return lines

@@ -8,6 +8,17 @@
                     <default>false</default>
                     <control type="toggle"/>
                 </setting>
+                <setting id="player_mode" type="integer" label="Al elegir una carátula" help="Preguntar muestra las fuentes de todos tus addons compatibles.">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <option label="Preguntar qué addon usar">0</option>
+                            <option label="Usar siempre Jacktook">1</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="integer"/>
+                </setting>
             </group>
         </category>
     </section>

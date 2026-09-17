@@ -2,6 +2,7 @@
 """Utilidades comunes para el configurador Andinoid TV."""
 import json
 import os
+import re
 import time
 
 import xbmc
@@ -73,12 +74,42 @@ def installed_addons():
     return result.get('addons', [])
 
 
-def find_addon_by_name(fragment):
+def _clean_name(name):
+    """Quita etiquetas de color/formato del nombre ([COLOR lime]Magellan[/COLOR])."""
+    return re.sub(r'\[/?(?:COLOR[^\]]*|B|I|UPPERCASE|LOWERCASE|CAPITALIZE)\]', '', name or '').lower()
+
+
+def find_addon(fragment, prefixes=('plugin.video.', 'plugin.program.', 'script.')):
+    """Busca un addon instalado por id o por nombre (sin distinguir mayúsculas).
+
+    El id tiene prioridad porque algunos addons usan nombres con color
+    (Magellan se llama "[COLOR lime]Magellan[/COLOR]" y su id es
+    plugin.video.Magellan_Matrix).
+    """
     fragment = fragment.lower()
-    for item in installed_addons():
-        if fragment in (item.get('name') or '').lower() and item['addonid'].startswith('plugin.video.'):
-            return item['addonid']
+    addons = installed_addons()
+    for item in addons:                                  # 1) coincidencia por id
+        addon_id = item.get('addonid') or ''
+        if fragment in addon_id.lower() and addon_id.startswith(prefixes):
+            return addon_id
+    for item in addons:                                  # 2) coincidencia por nombre
+        addon_id = item.get('addonid') or ''
+        if fragment in _clean_name(item.get('name')) and addon_id.startswith(prefixes):
+            return addon_id
     return None
+
+
+# Compatibilidad con versiones anteriores
+def find_addon_by_name(fragment):
+    return find_addon(fragment)
+
+
+def addon_icon(addon_id):
+    """Ruta real del ícono de otro addon (funciona con cualquier id)."""
+    try:
+        return xbmcaddon.Addon(addon_id).getAddonInfo('icon') or None
+    except RuntimeError:
+        return None
 
 
 def install_addon(addon_id, timeout=180):

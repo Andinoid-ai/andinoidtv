@@ -75,6 +75,9 @@ MENUS = {
         shortcut('Jacktook', ICONS + 'video-addons.png', open_action('jacktook')),
         shortcut('Palantir 3', ICONS + 'video-addons.png', open_action('palantir')),
         shortcut('Configurador', ICONS + 'addons.png', f'ActivateWindow(Programs,{ME},return)'),
+        shortcut('Complementos', ICONS + 'video-addons.png', 'ActivateWindow(AddonBrowser)'),
+        shortcut('Instalar .zip', ICONS + 'file-zipper.png', 'InstallFromZip'),
+        shortcut('Ajustes de Kodi', ICONS + 'settings.png', 'ActivateWindow(Settings)'),
     ],
     # ---------- Películas ----------
     '1101widgets': [

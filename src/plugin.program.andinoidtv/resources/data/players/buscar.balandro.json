@@ -1,0 +1,20 @@
+{
+    "name": "[COLOR deepskyblue]Balandro[/COLOR] (buscar)",
+    "plugin": "plugin.video.balandro",
+    "priority": 420,
+    "is_resolvable": "false",
+    "assert": {
+        "search_movie": ["title"],
+        "search_episode": ["showname"]
+    },
+    "search_movie": [
+        "plugin://plugin.video.balandro/",
+        {"label": "(?i).*(buscar|search).*"},
+        {"keyboard": "{title}"}
+    ],
+    "search_episode": [
+        "plugin://plugin.video.balandro/",
+        {"label": "(?i).*(buscar|search).*"},
+        {"keyboard": "{showname}"}
+    ]
+}
